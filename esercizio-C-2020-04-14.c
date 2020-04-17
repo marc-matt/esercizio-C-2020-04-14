@@ -1,5 +1,5 @@
 /*
-    Rubrica
+    rubrica.c
             Author: M. Marconi
             Date: 15th April 2020
             Version: 1.0.0
@@ -25,7 +25,9 @@ typedef struct {
 
 int id_counter;
 contact_type * address_book[ADDRESS_BOOK_SIZE];
+int lastIndex;
 
+//WORK
 contact_type * create_contact(char * name, char * phone){
     contact_type * person;
     person = calloc(1, sizeof(contact_type));
@@ -40,20 +42,35 @@ contact_type * create_contact(char * name, char * phone){
     return person;
 }
 
+//WORK
 void print_contact(contact_type * person){
 	printf("Person: ID: %d, NAME: %s, PHONE: %s\n", person->id, person->name, person->phone);
 }
 
-int emptyCase(contact_type * contact){
-	int is_empty;
-	if(contact == NULL){
-		is_empty = 0;
+//WORK
+bool emptyCase(int * index){
+	bool is_empty;
+	int i = *index;
+	if(address_book[i] == NULL){
+		is_empty = true;
 	} else {
-		is_empty = -1;
+		is_empty = false;
 	}
 	return is_empty;
 }
 
+//WORK
+int add_to_address_book(contact_type * c){
+	int i = lastIndex;
+	while(emptyCase(&i) == false && i == ADDRESS_BOOK_SIZE - 1){
+		i++;
+	}
+	address_book[i] = c;
+	lastIndex++;
+	return i;
+}
+
+//WORK
 bool isEqual(contact_type * c1, contact_type * c2){
 	bool eq;
 	if((strcmp(c1->name, c2->name)) == 0 && (strcmp(c1->phone, c2->phone)) == 0){
@@ -65,6 +82,7 @@ bool isEqual(contact_type * c1, contact_type * c2){
 	return eq;
 }
 
+//WORK
 bool sameName(contact_type * c1, contact_type * c2){
 	bool sameN;
 	if((strcmp(c1->name, c2->name)) == 0){
@@ -76,95 +94,47 @@ bool sameName(contact_type * c1, contact_type * c2){
 	return sameN;
 }
 
-bool samePhone(contact_type * c1, contact_type * c2){
-	bool sameP;
-	if((strcmp(c1->phone, c2->phone)) == 0){
-		sameP = true;
-	}
-	else {
-		sameP = false;
-	}
-	return sameP;
-}
-
+//WORK
 int compare_contacts(contact_type * c1, contact_type * c2){
-	int comp;
-	if((emptyCase(c1) == 0) || (emptyCase(c2) == 0)){
-		// DEBUG printf("Errore: rilevato contatto vuoto");
-		comp = -1;
-	} else if(isEqual(c1, c2) == true){
-		comp = 0;
-	} else if(sameName(c1, c2) == true){
-		// DEBUG printf("I contatti comparati hanno lo stesso nome");
-		int result = strcmp(c1->phone, c2->phone);
-		if(result > 0){
-			comp = 2;
-		} else if(result < 0){
-			comp = -2;
-		}
-	} else if(samePhone(c1, c2) == true){
-		// DEBUG printf("I conttatti comparati hanno lo stesso numero di telefono");
-		int result = strcmp(c1->name, c2->name);
-		if(result > 0){
-			comp = 2;
-		} else if(result < 0){
-			comp = -2;
-		}
-	} else {
-		int result = strcmp(c1->name, c2->name);
-		if(result > 0){
-			comp = 2;
-		} else if(result < 0){
-			comp = -2;
-		}
+	int result = 0;
+	if(c1 == NULL || c2 == NULL){
+		return -1;
 	}
-	return comp;
+	result = strcmp(c1->name, c2->name);
+	if(result != 0){
+		return result;
+	}
+	result = strcmp(c1->name, c2->name);
+	if(result != 0){
+		return result;
+	}
+	return 0;
 }
 
-int add_to_address_book(contact_type * c){
-	int i = 0;
-	while(emptyCase(address_book[i]) == true){
-		if(i == ADDRESS_BOOK_SIZE - 1){
-			printf("Rubrica piena!\n");
-			return -1;
-		}
-		i++;
-	}
-	address_book[i] = c;
-	return i;
-}
-
+//WORK
 int remove_from_address_book(contact_type * c){
-	int i = 0;
-	int result;
-	while(i < ADDRESS_BOOK_SIZE || compare_contacts(c, address_book[i]) != 0){
-		i++;
+	for(int i = 0; i < ADDRESS_BOOK_SIZE; i++){
+		if(compare_contacts(c, address_book[i]) == 0){
+			address_book[i] = NULL;
+			return i;
+		}
 	}
-	if(compare_contacts(c, address_book[i]) == 0){
-		address_book[i] = NULL;
-		result = i;
-	} else {
-		printf("Contatto non esistente\n");
-		result = -1;
-	}
-	return result;
+
+	return -1;
 }
 
+//WORK
 int search_in_address_book(contact_type * c){
-	int i = 0;
-	int result;
-	while(i < ADDRESS_BOOK_SIZE || compare_contacts(c, address_book[i]) != 0){
-		i++;
+	for(int i = 0; i < ADDRESS_BOOK_SIZE; i++){
+		if(compare_contacts(c, address_book[i]) == 0){
+			return i;
+		}
 	}
-	if(compare_contacts(c, address_book[i]) == 0){
-		result = i;
-	} else {
-		printf("Contatto non esistente\n");
-		result = -1;
-	}
-	return result;
+
+	return -1;
 }
 
+//WORK
 void swap_contact(contact_type ** c1, contact_type ** c2){
 	contact_type temp;
 	temp = **c1;
@@ -172,6 +142,7 @@ void swap_contact(contact_type ** c1, contact_type ** c2){
 	**c2 = temp;
 }
 
+//TO TEST
 void sort_by_name(contact_type * address[]){
 	int n, ultimoCambio;
 	n = ADDRESS_BOOK_SIZE;
@@ -193,53 +164,55 @@ int main(int argc, char *argv[]) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(dino);
+	int idin = add_to_address_book(dino);
+	bool x = emptyCase(&idin);
+	printf("%s", x ? "true" : "false");
 	contact_type * filippo = create_contact("filippo\0", "+391239\0");
 	if(filippo == NULL) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(filippo);
+	int ifil = add_to_address_book(filippo);
 	contact_type * barbara = create_contact("barbara\0","+391235\0");
 	if(barbara == NULL) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(barbara);
+	int ibar = add_to_address_book(barbara);
 	contact_type * antonio = create_contact("antonio\0","+391234\0");
 	if(antonio == NULL) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(antonio);
+	int iant = add_to_address_book(antonio);
 	contact_type * enrico = create_contact("enrico\0","+391238\0");
 	if(enrico == NULL) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(enrico);
+	int ienr = add_to_address_book(enrico);
 	contact_type * chiara = create_contact("chiara\0","+391236\0");
 	if(chiara == NULL) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(chiara);
+	int ichi = add_to_address_book(chiara);
 	int nAnto = search_in_address_book(antonio);
-	if(nAnto > 0){
-		remove_from_address_book(antonio);
+	if(nAnto >= 0){
+		int rAnt = remove_from_address_book(antonio);
 	}
 	contact_type * pino = create_contact("pino\0","+399999\0");
 	if(pino == NULL) {
 		printf("errore in create_contact!\n");
 		exit(EXIT_FAILURE);
 	}
-	add_to_address_book(pino);
+	int ipin = add_to_address_book(pino);
 	for(int i = 0; i < ADDRESS_BOOK_SIZE; i++){
 		if(address_book[i] != NULL){
 			print_contact(address_book[i]);
 		}
 	}
-	add_to_address_book(antonio);
+	int iant2 = add_to_address_book(antonio);
 	sort_by_name(address_book);
 	for(int i = 0; i < ADDRESS_BOOK_SIZE; i++){
 		if(address_book[i] != NULL){
